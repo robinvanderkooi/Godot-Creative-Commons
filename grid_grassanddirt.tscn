@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://ch54e1ydiygad"]
+
+[ext_resource type="MeshLibrary" uid="uid://c5gnfrqax0y5u" path="res://DirtAndGrass.tres" id="1_d41bq"]
+
+[node name="GridMap" type="GridMap"]
+mesh_library = ExtResource("1_d41bq")
+cell_size = Vector3(1, 1, 1)
+data = {
+"cells": PackedInt32Array(65534, 0, 1, 65534, 1, 0, 65534, 65535, 1, 65534, 65534, 0, 65535, 65534, 1, 0, 65534, 1, 1, 1, 0, 1, 65534, 0, 65535, 65535, 1, 0, 65535, 1, 0, 0, 1, 65535, 0, 1, 1, 0, 1, 1, 65535, 1, 0, 1, 1, 65535, 1, 1)
+}
+metadata/_editor_floor_ = Vector3(0, 0, 0)
