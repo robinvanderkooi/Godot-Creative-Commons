@@ -1,0 +1,40 @@
+[gd_scene load_steps=6 format=3 uid="uid://rsbpnuh3snih"]
+
+[ext_resource type="Script" path="res://Mains/Whiteness/player.gd" id="1_dci02"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_go4c7"]
+size = Vector2(1000, 1000)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bk53k"]
+size = Vector3(1000, 2, 1000)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_bir5d"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_pmxfr"]
+
+[node name="Whiteness" type="Node3D"]
+
+[node name="WhiteFloor" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_go4c7")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="WhiteFloor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WhiteFloor/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("BoxShape3D_bk53k")
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+script = ExtResource("1_dci02")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape3D_bir5d")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
+mesh = SubResource("CapsuleMesh_pmxfr")
+
+[node name="Cam" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 2, 4)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.25, 0.258819, 0.933013, -0.0669873, -0.965926, 0.25, 0, 0, 0)

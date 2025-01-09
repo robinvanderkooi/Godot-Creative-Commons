@@ -9,6 +9,6 @@ func _process(_delta: float) -> void:
 	if int(time) != last_second:
 		last_second = int(time)
 		#triggered
-		print(str(last_second) + self.name + " " + str(position))
+		#print(str(last_second) + self.name + " " + str(position))
 		pass
 	pass

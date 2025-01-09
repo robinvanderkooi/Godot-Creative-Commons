@@ -1,0 +1,21 @@
+[gd_scene load_steps=6 format=3 uid="uid://cgxfqb7u28t82"]
+
+[ext_resource type="ArrayMesh" uid="uid://cjvfhtn5b7aet" path="res://Blender/Tree/treetile_Tree.res" id="1_5gits"]
+[ext_resource type="Texture2D" uid="uid://mtr8tgmso2jl" path="res://Blender/Tree2BaseColor.png" id="2_yyf4f"]
+[ext_resource type="ArrayMesh" uid="uid://dtqrol18eab47" path="res://Blender/Tree/treetile_Tree_001.res" id="3_gvge5"]
+[ext_resource type="ArrayMesh" uid="uid://cwdg3ugeq7xgp" path="res://Blender/DeadTree/deadtree_Cube.res" id="4_m5ugi"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nmgy2"]
+albedo_texture = ExtResource("2_yyf4f")
+
+[node name="Library" type="Node3D"]
+
+[node name="Tree1" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1_5gits")
+
+[node name="Tree2" type="MeshInstance3D" parent="."]
+material_override = SubResource("StandardMaterial3D_nmgy2")
+mesh = ExtResource("3_gvge5")
+
+[node name="DealTree1" type="MeshInstance3D" parent="."]
+mesh = ExtResource("4_m5ugi")

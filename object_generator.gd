@@ -7,21 +7,22 @@ var objects = [] #2D array
 
 var grid_read = []
 var grid_write = []
+var grid_clearing = []
+var grid_clearings = []
 
 enum obj_type{
 	notset = 0,
 	dirt = 1,
-	grass = 2,
-	clearing = 4,
-	rock = 8,
-	scrub = 16,
-	tree = 32,
-	flower = 64
+	grass = 2
+}
+enum clearing_type{
+	dead_zone = 0
+}
+enum special_buildings{
+	dead_tree = 0
 }
 
 var time = 0.0
-
-var map_generated
 
 var trigger_generation = true
 var instance_terrains = false
@@ -85,9 +86,11 @@ func init_grid():
 	for x in range(width):
 		grid_read.append([])
 		grid_write.append([])
+		grid_clearing.append([])
 		for y in range(height):
 			grid_read[x].append(0)
 			grid_write[x].append(0)
+			grid_clearing[x].append(0)
 	
 func clear_grid():
 	for x in range(width):
@@ -103,7 +106,10 @@ func generate_terrain():
 				set_this_this(x,y,obj_type.dirt)
 			else:
 				set_this_this(x,y,obj_type.grass)
-	var smooth_iterations = 2
+	make_clearing(clearing_type.dead_zone)
+	make_clearing(clearing_type.dead_zone)
+	make_clearing(clearing_type.dead_zone)
+	var smooth_iterations = 12
 	for i in smooth_iterations:
 		copy_written_to_reading()
 		for x in range(width):
@@ -111,23 +117,22 @@ func generate_terrain():
 				var grass_count = 0
 				for n in [-1,0,+1]:
 					for m in [-1,0,+1]:
-						if is_this_this((x+n)%(width-1),(y+m)%(height-1), obj_type.grass): grass_count += 1
-				if grass_count > 6: 
+						if n != 0 or m != 0:
+							if is_this_this((x+n+width)%width,(y+m+height)%height, obj_type.grass): 
+								grass_count += 1
+				
+				if is_this_this(x,y, obj_type.dirt) and grass_count >= 6: 
 					set_this_this(x,y,obj_type.grass)
-				elif grass_count < 4:
+				
+				if is_this_this(x,y, obj_type.grass) and grass_count < 3:
 					set_this_this(x,y,obj_type.dirt)
+				
 	copy_written_to_reading()
 
 func is_this_this(x : int, y : int, t : obj_type) -> bool:
 	return grid_read[x][y] & t == t
 func set_this_this(x : int, y : int, t : obj_type):
 	grid_write[x][y] = t
-func flag_this_this(x : int, y : int, t : obj_type):
-	grid_write[x][y] = grid_write[x][y] | t
-func swap_read_write():
-	var temp = grid_read
-	grid_read = grid_write
-	grid_write = temp
 func copy_written_to_reading():
 	for x in range(width):
 		for y in range(height):
@@ -146,21 +151,95 @@ func get_randVertOrient() -> int:
 			return 24
 	return 0
 
+func make_clearing(c : clearing_type):
+	#Determine the clearing radius
+	var radius = 0
+	if c == clearing_type.dead_zone:
+		radius = 10
+	if radius != 0:
+		var square_radius = pow(radius, 2)
+		
+		#Pick a random spot
+		var x = -1
+		var y = -1
+		var restart = false
+		var safety = 10000
+		while safety > 0:
+			safety -= 1
+			x = randi_range(0 + radius, width - (radius + 1))
+			y = randi_range(0 + radius, height - (radius + 1))
+			for n in range(x - radius, x + radius):
+				if restart: break
+				for m in range(y - radius, y + radius):
+					if restart: break
+					if Vector2(x,y).distance_squared_to(Vector2(n,m)) <= square_radius:
+						if grid_clearing[n][m] == 1:
+							restart = true
+			
+			if not restart: 
+				grid_clearings.append(Vector2(x,y))
+				break # get out of the safety loop
+		if not restart:
+			#We got here with a location for the clearing.
+			print("Got a clearing at " + str(x) + ", " + str(y))
+			var square_distance = 999.9
+			for n in range(x - radius, x + radius):
+				for m in range(y - radius, y + radius):
+					square_distance = Vector2(x,y).distance_squared_to(Vector2(n,m))
+					if square_distance <= square_radius:
+						grid_clearing[n][m] = 1
+						var half_r = float(radius) / 2.0
+						var d = Vector2(x,y).distance_to(Vector2(n,m))
+						if d <= half_r:
+							set_this_this(n,m,obj_type.dirt)
+						elif (d - half_r) / half_r < randf():
+							set_this_this(n,m,obj_type.dirt)
+			pass
+		else:
+			print("Clearing failed")
+	
+	pass
+
 func instanciate_terrains2():
 	for x in range(width):
 		for y in range(height):
+			#if grid_clearing[x][y] == 1:
+				#%Gridy.set_cell_item(Vector3i(x,0,y),0,0)
+			if _check_clearings(Vector2(x,y)):
+				var off:Vector2 = _get_offset(Vector2(x,y))
+				var new_x = x * 10 + int(off.x * 10.0)
+				var new_y = y * 10 + int(off.y * 10.0)
+				%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),2,get_randVertOrient())
 			if is_this_this(x,y,obj_type.grass):
 				%Gridy.set_cell_item(Vector3i(x,0,y),1,0)
 				if randf() <= 0.66:
+					var off:Vector2 = _get_offset(Vector2(x,y))
+					var new_x = x * 10 + int(off.x * 10.0)
+					var new_y = y * 10 + int(off.y * 10.0)
 					if randf() < 0.5:
-						%TreeMap.set_cell_item(Vector3i(x,1,y),0,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),0,get_randVertOrient())
 					else:
-						%TreeMap.set_cell_item(Vector3i(x,1,y),1,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),1,get_randVertOrient())
 			elif is_this_this(x,y, obj_type.dirt):
 				%Gridy.set_cell_item(Vector3i(x,0,y),0,0)
-				if randf() <= 0.3:
+				if randf() <= 0.3 and grid_clearing[x][y] == 0:
+					var off:Vector2 = _get_offset(Vector2(x,y))
+					var new_x = x * 10 + int(off.x * 10.0)
+					var new_y = y * 10 + int(off.y * 10.0)
 					if randf() < 0.5:
-						%TreeMap.set_cell_item(Vector3i(x,1,y),0,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),0,get_randVertOrient())
 					else:
-						%TreeMap.set_cell_item(Vector3i(x,1,y),1,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),1,get_randVertOrient())
 	pass
+
+func _check_clearings(v : Vector2) -> bool:
+	for clearing in grid_clearings:
+		if clearing.x == v.x and clearing.y == v.y:
+			return true
+	return false
+
+func _get_offset(v:Vector2i) -> Vector2:
+	var x = (0.11 * sin(v.x * 7.3 + 4)) + (0.23 * sin(v.x * 2.6 + 0.7)) + (0.07 * sin(v.x * 6.1 + 6)) + (0.09 * sin(v.x * 9.2 + 3.14))
+	var y = (0.21 * sin(v.y * 6.1 + 7.11)) + (0.13 * sin(v.y * 1.6 + 12)) + (0.11 * sin(v.y * 4.1 + 5)) + (0.05 * sin(v.y * 2.2 + 2.12))
+	return Vector2(x,y)
+	
