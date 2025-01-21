@@ -57,14 +57,18 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if trigger_generation:
 		trigger_generation = false
+		print("do_the_thing_Start: "+str(Time.get_time_dict_from_system()))
 		do_the_thing()
+		print("do_the_thing_Stop: "+str(Time.get_time_dict_from_system()))
 		#thread = Thread.new() # The thread thing seemed to hurt the debugger. Performed worse with it running.
 		#thread.start(do_the_thing.bind())
 	elif instance_terrains:
 		instance_terrains = false
 		#instanciate_terrains() #THIS IS PRETTY BAD! 40,000 Meshes works but does not debug well. 
 		#                       Also took much longer to make them and dropped the frame rate. 10 seconds to load. 90 fps.
+		print("instanciate_terrains2_Start: "+str(Time.get_time_dict_from_system()))
 		instanciate_terrains2() # Gridmap. < 1 sec to load. 118 fps
+		print("instanciate_terrains2_Stop: "+str(Time.get_time_dict_from_system()))
 		#thread.wait_to_finish()
 		#thread = null
 	#print(str(thread.is_alive())+","+str(thread.is_started()))
@@ -78,6 +82,7 @@ func _process(delta: float) -> void:
 func do_the_thing():
 	print("doing the thing")
 	init_grid()
+	_generate_island_noisemap()
 	generate_terrain()
 	instance_terrains = true
 	print("did the thing")
@@ -98,6 +103,39 @@ func clear_grid():
 			grid_read[x][y] = 0
 			grid_write[x][y] = 0
 
+func _generate_island_noisemap():
+	#var texture1 := NoiseTexture2D.new()
+	#var noisy1 := FastNoiseLite.new()
+	#noisy1.fractal_octaves = 11
+	#noisy1.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	#texture1.width = 2024
+	#texture1.height = 2024
+	#texture1.noise = noisy1
+	#await texture1.changed
+	#var image1 = texture1.get_image()
+	#var data = image1.get_data()
+	#%IslandNoiseMap.texture = texture1
+	var tex1:NoiseTexture2D = %IslandMap1.texture
+	var tex2:GradientTexture2D = %IslandMap2.texture
+	var tex3:ImageTexture = ImageTexture.new()
+	var image1:Image = tex1.get_image()
+	var image2:Image = tex2.get_image()
+	#var hmmm2 = image1.get_data()
+	#var tex3 = tex1.get_size()
+	var start_time = Time.get_ticks_msec()
+	for x:int in range(image1.get_width()):
+		for y:int in range(image1.get_height()):
+			var samp1 = image1.get_pixel(x,y)
+			var samp2 = image2.get_pixel(x,y)
+			var b = samp1.r * samp2.r
+			#if b < 0.1: b = 0.0
+			image1.set_pixel(x,y,Color(b,b,b,1))
+			pass
+	tex3.set_image(image1)
+	%IslandMap3.texture = tex3
+	var final_time_millis = (Time.get_ticks_msec() - start_time)
+	pass
+
 func generate_terrain():
 	var randy = RandomNumberGenerator.new()
 	for x in range(width):
@@ -109,7 +147,7 @@ func generate_terrain():
 	make_clearing(clearing_type.dead_zone)
 	make_clearing(clearing_type.dead_zone)
 	make_clearing(clearing_type.dead_zone)
-	var smooth_iterations = 12
+	var smooth_iterations = 4
 	for i in smooth_iterations:
 		copy_written_to_reading()
 		for x in range(width):
@@ -201,8 +239,12 @@ func make_clearing(c : clearing_type):
 	pass
 
 func instanciate_terrains2():
+	var tex : Texture2D = %IslandMap3.texture
+	var im :Image= tex.get_image()
 	for x in range(width):
 		for y in range(height):
+			var c : Color = im.get_pixel(x,y)
+			var h = int( c.r * 24.0 )
 			#if grid_clearing[x][y] == 1:
 				#%Gridy.set_cell_item(Vector3i(x,0,y),0,0)
 			if _check_clearings(Vector2(x,y)):
@@ -211,7 +253,7 @@ func instanciate_terrains2():
 				var new_y = y * 10 + int(off.y * 10.0)
 				%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),2,get_randVertOrient())
 			if is_this_this(x,y,obj_type.grass):
-				%Gridy.set_cell_item(Vector3i(x,0,y),1,0)
+				%Gridy.set_cell_item(Vector3i(x,h,y),1,0)
 				if randf() <= 0.66:
 					var off:Vector2 = _get_offset(Vector2(x,y))
 					var new_x = x * 10 + int(off.x * 10.0)
@@ -221,7 +263,7 @@ func instanciate_terrains2():
 					else:
 						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),1,get_randVertOrient())
 			elif is_this_this(x,y, obj_type.dirt):
-				%Gridy.set_cell_item(Vector3i(x,0,y),0,0)
+				%Gridy.set_cell_item(Vector3i(x,h,y),0,0)
 				if randf() <= 0.3 and grid_clearing[x][y] == 0:
 					var off:Vector2 = _get_offset(Vector2(x,y))
 					var new_x = x * 10 + int(off.x * 10.0)
@@ -242,4 +284,3 @@ func _get_offset(v:Vector2i) -> Vector2:
 	var x = (0.11 * sin(v.x * 7.3 + 4)) + (0.23 * sin(v.x * 2.6 + 0.7)) + (0.07 * sin(v.x * 6.1 + 6)) + (0.09 * sin(v.x * 9.2 + 3.14))
 	var y = (0.21 * sin(v.y * 6.1 + 7.11)) + (0.13 * sin(v.y * 1.6 + 12)) + (0.11 * sin(v.y * 4.1 + 5)) + (0.05 * sin(v.y * 2.2 + 2.12))
 	return Vector2(x,y)
-	

@@ -1,0 +1,38 @@
+[gd_scene load_steps=7 format=3 uid="uid://bqkc6eejfnira"]
+
+[ext_resource type="PackedScene" uid="uid://b3uxyikkjtilp" path="res://Blender/HexTestShape/Hex.tscn" id="1_c8g5v"]
+[ext_resource type="Shader" path="res://Shader/Library_TestHex.gdshader" id="2_7esqt"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4svf8"]
+render_priority = 0
+shader = ExtResource("2_7esqt")
+shader_parameter/tileType = 0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5k0y2"]
+render_priority = 0
+shader = ExtResource("2_7esqt")
+shader_parameter/tileType = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_k0lum"]
+render_priority = 0
+shader = ExtResource("2_7esqt")
+shader_parameter/tileType = 2
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3x1cs"]
+render_priority = 0
+shader = ExtResource("2_7esqt")
+shader_parameter/tileType = 3
+
+[node name="LibraryTestHex" type="Node3D"]
+
+[node name="Dirt" parent="." instance=ExtResource("1_c8g5v")]
+surface_material_override/0 = SubResource("ShaderMaterial_4svf8")
+
+[node name="Grass" parent="." instance=ExtResource("1_c8g5v")]
+surface_material_override/0 = SubResource("ShaderMaterial_5k0y2")
+
+[node name="Stone" parent="." instance=ExtResource("1_c8g5v")]
+surface_material_override/0 = SubResource("ShaderMaterial_k0lum")
+
+[node name="Water" parent="." instance=ExtResource("1_c8g5v")]
+surface_material_override/0 = SubResource("ShaderMaterial_3x1cs")
