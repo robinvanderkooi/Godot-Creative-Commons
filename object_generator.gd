@@ -67,7 +67,7 @@ func _process(delta: float) -> void:
 		#instanciate_terrains() #THIS IS PRETTY BAD! 40,000 Meshes works but does not debug well. 
 		#                       Also took much longer to make them and dropped the frame rate. 10 seconds to load. 90 fps.
 		print("instanciate_terrains2_Start: "+str(Time.get_time_dict_from_system()))
-		instanciate_terrains2() # Gridmap. < 1 sec to load. 118 fps
+		instanciate_terrains3() # Gridmap. < 1 sec to load. 118 fps
 		print("instanciate_terrains2_Stop: "+str(Time.get_time_dict_from_system()))
 		#thread.wait_to_finish()
 		#thread = null
@@ -247,31 +247,88 @@ func instanciate_terrains2():
 			var h = int( c.r * 24.0 )
 			#if grid_clearing[x][y] == 1:
 				#%Gridy.set_cell_item(Vector3i(x,0,y),0,0)
-			if _check_clearings(Vector2(x,y)):
+			if h > 3 and _check_clearings(Vector2(x,y)):
 				var off:Vector2 = _get_offset(Vector2(x,y))
 				var new_x = x * 10 + int(off.x * 10.0)
 				var new_y = y * 10 + int(off.y * 10.0)
-				%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),2,get_randVertOrient())
+				%TreeMap.set_cell_item(Vector3i(new_x,h+1,new_y),2,get_randVertOrient())
 			if is_this_this(x,y,obj_type.grass):
 				%Gridy.set_cell_item(Vector3i(x,h,y),1,0)
-				if randf() <= 0.66:
+				if h > 3 and randf() <= 0.66:
 					var off:Vector2 = _get_offset(Vector2(x,y))
 					var new_x = x * 10 + int(off.x * 10.0)
 					var new_y = y * 10 + int(off.y * 10.0)
 					if randf() < 0.5:
-						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),0,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,h+1,new_y),0,get_randVertOrient())
 					else:
-						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),1,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,h+1,new_y),1,get_randVertOrient())
 			elif is_this_this(x,y, obj_type.dirt):
 				%Gridy.set_cell_item(Vector3i(x,h,y),0,0)
-				if randf() <= 0.3 and grid_clearing[x][y] == 0:
+				if h > 3 and randf() <= 0.3 and grid_clearing[x][y] == 0:
 					var off:Vector2 = _get_offset(Vector2(x,y))
 					var new_x = x * 10 + int(off.x * 10.0)
 					var new_y = y * 10 + int(off.y * 10.0)
 					if randf() < 0.5:
-						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),0,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,h+1,new_y),0,get_randVertOrient())
 					else:
-						%TreeMap.set_cell_item(Vector3i(new_x,1,new_y),1,get_randVertOrient())
+						%TreeMap.set_cell_item(Vector3i(new_x,h+1,new_y),1,get_randVertOrient())
+	pass
+func instanciate_terrains3():
+	var mi := MeshInstance3D.new()
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color.BURLYWOOD
+	mi.material_override = mat
+	var st = SurfaceTool.new()
+	
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_normal(Vector3(0, 1, 0))
+	var i : Image = %IslandMap3.texture.get_image()
+	var pv2 := PackedVector2Array()
+	var pv3 := PackedVector3Array()
+	var c : Color
+	for x in width:
+		for y in height:
+			var off : Vector2 = _get_offset(Vector2i(x,y))
+			c = i.get_pixel(x,y)
+			pv2.append(Vector2(float(x)+(off.x*0.1),float(y)+(off.y*0.1)))
+			pv3.append(Vector3(float(x)+(off.x*0.1),c.r*20.0,float(y)+(off.y*0.1)))
+	i.get_data()
+	var del : PackedInt32Array = Geometry2D.triangulate_delaunay(pv2)
+	print("Triangle count: "+str(del.size()))
+	for ii in del.size():
+		if not ii % 3 == 0: continue
+		var aa :Vector3 = pv3[del[ii]]
+		var bb :Vector3 = pv3[del[ii+1]]
+		var cc :Vector3 = pv3[del[ii+2]]
+		var dd = ((bb-aa).normalized()).cross((bb-cc).normalized())
+		if Vector3.UP.dot(dd) >= 0:
+			st.set_normal(dd.normalized())
+			st.add_vertex(aa)
+			st.add_vertex(bb)
+			st.add_vertex(cc)
+		else:
+			st.set_normal(dd.normalized() * -1.0)
+			st.add_vertex(aa)
+			st.add_vertex(cc)
+			st.add_vertex(bb)
+		
+	#st.set_uv(Vector2(1, 1))
+	#st.add_vertex(Vector3(-3, 0, -3))
+	#st.set_uv(Vector2(0, 0))
+	#st.add_vertex(Vector3(3, 0, 3))
+	#st.set_uv(Vector2(0, 1))
+	#st.add_vertex(Vector3(-3, 0, 3))
+	#st.set_uv(Vector2(0, 0))
+	#st.add_vertex(Vector3(-3, 0, -3))
+	#st.set_uv(Vector2(1, 0))
+	#st.add_vertex(Vector3(3, 0, -3))
+	#st.set_uv(Vector2(1, 1))
+	#st.add_vertex(Vector3(3, 0, 3))
+
+
+	var mesh : ArrayMesh = st.commit()
+	mi.mesh = mesh
+	add_child(mi)
 	pass
 
 func _check_clearings(v : Vector2) -> bool:

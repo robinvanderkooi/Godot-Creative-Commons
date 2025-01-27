@@ -1,0 +1,46 @@
+[gd_scene load_steps=7 format=3 uid="uid://dd6io32hba4x6"]
+
+[ext_resource type="Shader" path="res://Shader/Library_TestHex.gdshader" id="1_krgap"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wi56c"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_emq74"]
+render_priority = 0
+shader = ExtResource("1_krgap")
+shader_parameter/tileType = 0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4d3p2"]
+render_priority = 0
+shader = ExtResource("1_krgap")
+shader_parameter/tileType = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wqopj"]
+render_priority = 0
+shader = ExtResource("1_krgap")
+shader_parameter/tileType = 2
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_snt5t"]
+render_priority = 0
+shader = ExtResource("1_krgap")
+shader_parameter/tileType = 3
+
+[node name="LibraryTestMessySquares" type="Node3D"]
+
+[node name="Dirt" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_wi56c")
+surface_material_override/0 = SubResource("ShaderMaterial_emq74")
+
+[node name="Grass" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("BoxMesh_wi56c")
+surface_material_override/0 = SubResource("ShaderMaterial_4d3p2")
+
+[node name="Stone" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("BoxMesh_wi56c")
+surface_material_override/0 = SubResource("ShaderMaterial_wqopj")
+
+[node name="Water" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("BoxMesh_wi56c")
+surface_material_override/0 = SubResource("ShaderMaterial_snt5t")
