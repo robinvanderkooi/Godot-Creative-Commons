@@ -295,23 +295,74 @@ func instanciate_terrains3():
 	i.get_data()
 	var del : PackedInt32Array = Geometry2D.triangulate_delaunay(pv2)
 	print("Triangle count: "+str(del.size()))
+	var normal_dic := {}
+	##1 loop sharp normals
+	#for ii in del.size():
+		#if not ii % 3 == 0: continue
+		#var aa :Vector3 = pv3[del[ii]]
+		#var bb :Vector3 = pv3[del[ii+1]]
+		#var cc :Vector3 = pv3[del[ii+2]]
+		#var dd = ((bb-aa).normalized()).cross((bb-cc).normalized())
+		#if Vector3.UP.dot(dd) >= 0:
+			#st.set_normal(dd.normalized())
+			#st.add_vertex(aa)
+			#st.add_vertex(bb)
+			#st.add_vertex(cc)
+		#else:
+			#st.set_normal(dd.normalized() * -1.0)
+			#st.add_vertex(aa)
+			#st.add_vertex(cc)
+			#st.add_vertex(bb)
+	#2 loop smoothed normals
 	for ii in del.size():
 		if not ii % 3 == 0: continue
 		var aa :Vector3 = pv3[del[ii]]
 		var bb :Vector3 = pv3[del[ii+1]]
 		var cc :Vector3 = pv3[del[ii+2]]
 		var dd = ((bb-aa).normalized()).cross((bb-cc).normalized())
+		if not normal_dic.has(del[ii+0]): normal_dic[del[ii+0]] = []
+		if not normal_dic.has(del[ii+1]): normal_dic[del[ii+1]] = []
+		if not normal_dic.has(del[ii+2]): normal_dic[del[ii+2]] = []
 		if Vector3.UP.dot(dd) >= 0:
+			normal_dic[del[ii]].append(dd.normalized())
 			st.set_normal(dd.normalized())
+		else:
+			normal_dic[del[ii]].append(dd.normalized() * -1.0)
+			st.set_normal(dd.normalized() * -1.0)
+	for ii in del.size():
+		if not ii % 3 == 0: continue
+		var aa :Vector3 = pv3[del[ii]]
+		var bb :Vector3 = pv3[del[ii+1]]
+		var cc :Vector3 = pv3[del[ii+2]]
+		var dd = ((bb-aa).normalized()).cross((bb-cc).normalized())
+		var aa_normal : Vector3
+		var bb_normal : Vector3
+		var cc_normal : Vector3
+		for iii in normal_dic[del[ii]].size():
+			aa_normal += normal_dic[del[ii]][iii]
+		aa_normal /= float(normal_dic[del[ii]].size())
+		for iii in normal_dic[del[ii+1]].size():
+			bb_normal += normal_dic[del[ii+1]][iii]
+		bb_normal /= float(normal_dic[del[ii+1]].size())
+		for iii in normal_dic[del[ii+2]].size():
+			cc_normal += normal_dic[del[ii+2]][iii]
+		cc_normal /= float(normal_dic[del[ii+2]].size())
+		if Vector3.UP.dot(dd) >= 0:
+			st.set_normal(aa_normal)
 			st.add_vertex(aa)
+			st.set_normal(bb_normal)
 			st.add_vertex(bb)
+			st.set_normal(cc_normal)
 			st.add_vertex(cc)
 		else:
-			st.set_normal(dd.normalized() * -1.0)
+			st.set_normal(aa_normal)
 			st.add_vertex(aa)
+			st.set_normal(cc_normal)
 			st.add_vertex(cc)
+			st.set_normal(bb_normal)
 			st.add_vertex(bb)
 		
+	##testcode
 	#st.set_uv(Vector2(1, 1))
 	#st.add_vertex(Vector3(-3, 0, -3))
 	#st.set_uv(Vector2(0, 0))
