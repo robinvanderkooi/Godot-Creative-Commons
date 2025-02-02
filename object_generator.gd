@@ -1,7 +1,10 @@
+@tool
 extends Node3D
+
 
 @export var width = 100
 @export var height = 100
+@export var reload: bool = false
 
 var objects = [] #2D array
 
@@ -55,6 +58,11 @@ func _ready() -> void:
 	pass
 
 func _process(delta: float) -> void:
+	if reload == true:
+		instance_terrains = false
+		instanciate_terrains3()
+		
+	
 	if trigger_generation:
 		trigger_generation = false
 		print("do_the_thing_Start: "+str(Time.get_time_dict_from_system()))
@@ -64,7 +72,7 @@ func _process(delta: float) -> void:
 		#thread.start(do_the_thing.bind())
 	elif instance_terrains:
 		instance_terrains = false
-		#instanciate_terrains() #THIS IS PRETTY BAD! 40,000 Meshes works but does not debug well. 
+		#instanciate_terrains2() #THIS IS PRETTY BAD! 40,000 Meshes works but does not debug well. 
 		#                       Also took much longer to make them and dropped the frame rate. 10 seconds to load. 90 fps.
 		print("instanciate_terrains2_Start: "+str(Time.get_time_dict_from_system()))
 		instanciate_terrains3() # Gridmap. < 1 sec to load. 118 fps
@@ -117,9 +125,14 @@ func _generate_island_noisemap():
 	#%IslandNoiseMap.texture = texture1
 	var tex1:NoiseTexture2D = %IslandMap1.texture
 	var tex2:GradientTexture2D = %IslandMap2.texture
+	var tex4:NoiseTexture2D = %IslandMap4.texture
+	
+	#tex3 is the empty for the result
 	var tex3:ImageTexture = ImageTexture.new()
+	
 	var image1:Image = tex1.get_image()
 	var image2:Image = tex2.get_image()
+	var image3:Image = tex4.get_image()
 	#var hmmm2 = image1.get_data()
 	#var tex3 = tex1.get_size()
 	var start_time = Time.get_ticks_msec()
@@ -127,7 +140,8 @@ func _generate_island_noisemap():
 		for y:int in range(image1.get_height()):
 			var samp1 = image1.get_pixel(x,y)
 			var samp2 = image2.get_pixel(x,y)
-			var b = samp1.r * samp2.r
+			var samp3 = image3.get_pixel(x,y)
+			var b = samp1.r * samp2.r * samp3.r
 			#if b < 0.1: b = 0.0
 			image1.set_pixel(x,y,Color(b,b,b,1))
 			pass

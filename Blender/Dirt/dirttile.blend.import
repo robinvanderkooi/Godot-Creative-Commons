@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bwcb8meka1wit"
-path="res://.godot/imported/dirttile.blend-500c808bb85b31bf3e3d1ca8c34c85cd.scn"
+valid=false
 
 [deps]
 
 source_file="res://Blender/Dirt/dirttile.blend"
-dest_files=["res://.godot/imported/dirttile.blend-500c808bb85b31bf3e3d1ca8c34c85cd.scn"]
 
 [params]
 

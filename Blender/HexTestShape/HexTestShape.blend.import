@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c7ypwcgvjhwj8"
-path="res://.godot/imported/HexTestShape.blend-89f57dad8e5b4420f8ad4628e29e4d81.scn"
+valid=false
 
 [deps]
 
 source_file="res://Blender/HexTestShape/HexTestShape.blend"
-dest_files=["res://.godot/imported/HexTestShape.blend-89f57dad8e5b4420f8ad4628e29e4d81.scn"]
 
 [params]
 

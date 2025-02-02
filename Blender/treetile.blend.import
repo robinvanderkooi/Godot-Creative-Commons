@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ca2vaeicdkdam"
-path="res://.godot/imported/treetile.blend-acedbd770e353a099cf6077b64ab2575.scn"
+valid=false
 
 [deps]
 
 source_file="res://Blender/treetile.blend"
-dest_files=["res://.godot/imported/treetile.blend-acedbd770e353a099cf6077b64ab2575.scn"]
 
 [params]
 
