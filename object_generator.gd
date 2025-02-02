@@ -63,8 +63,6 @@ func _process(delta: float) -> void:
 		_reload = reload
 		instance_terrains = false
 		do_the_thing()
-		instanciate_terrains3()
-		
 	
 	if trigger_generation:
 		trigger_generation = false
@@ -147,6 +145,17 @@ func _generate_island_noisemap():
 			var samp2 = image2.get_pixel(x,y)
 			var samp3 = image3.get_pixel(x,y)
 			var b = samp1.r * samp2.r * samp3.r
+			var bb = b
+			var min = 0.23
+			var max = 0.34
+			var mid = (min + max)/2.0
+			if bb > min and bb < max:
+				b = mid
+			elif bb > mid:
+				b = bb * (mid / max)
+			else:
+				b = bb * (mid / min)
+				
 			#if b < 0.1: b = 0.0
 			image1.set_pixel(x,y,Color(b,b,b,1))
 			pass
