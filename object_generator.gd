@@ -145,16 +145,19 @@ func _generate_island_noisemap():
 			var samp2 = image2.get_pixel(x,y)
 			var samp3 = image3.get_pixel(x,y)
 			var b = samp1.r * samp2.r * samp3.r
-			var bb = b
-			var min = 0.23
-			var max = 0.34
-			var mid = (min + max)/2.0
-			if bb > min and bb < max:
-				b = mid
-			elif bb > mid:
-				b = bb * (mid / max)
-			else:
-				b = bb * (mid / min)
+			b = flatten_height(b, 0.18, 0.22)
+			b = flatten_height(b, 0.23, 0.34)
+			b = flatten_height(b, 0.38, 0.42)
+			#var bb = b
+			#var min = 0.23
+			#var max = 0.34
+			#var mid = (min + max)/2.0
+			#if bb > min and bb < max:
+				#b = mid
+			#elif bb > mid:
+				#b = bb * (mid / max)
+			#else:
+				#b = bb * (mid / min)
 				
 			#if b < 0.1: b = 0.0
 			image1.set_pixel(x,y,Color(b,b,b,1))
@@ -163,6 +166,16 @@ func _generate_island_noisemap():
 	%IslandMap3.texture = tex3
 	var final_time_millis = (Time.get_ticks_msec() - start_time)
 	pass
+
+func flatten_height(h:float, min:float, max:float)->float:
+			var hh = h
+			var mid = (min + max)/2.0
+			if hh > min and hh < max:
+				return mid
+			elif hh > mid:
+				return hh * (mid / max)
+			else:
+				return hh * (mid / min)
 
 func generate_terrain():
 	var randy = RandomNumberGenerator.new()
