@@ -57,9 +57,12 @@ func _ready() -> void:
 	
 	pass
 
+var _reload : bool = reload
 func _process(delta: float) -> void:
-	if reload == true:
+	if reload != _reload:
+		_reload = reload
 		instance_terrains = false
+		do_the_thing()
 		instanciate_terrains3()
 		
 	
@@ -89,9 +92,9 @@ func _process(delta: float) -> void:
 
 func do_the_thing():
 	print("doing the thing")
-	init_grid()
+	#init_grid()
 	_generate_island_noisemap()
-	generate_terrain()
+	#generate_terrain()
 	instance_terrains = true
 	print("did the thing")
 
@@ -112,6 +115,8 @@ func clear_grid():
 			grid_write[x][y] = 0
 
 func _generate_island_noisemap():
+	var noisetexture : NoiseTexture2D = %IslandMap1.texture
+	%IslandMap1.texture.noise.seed = randi()
 	#var texture1 := NoiseTexture2D.new()
 	#var noisy1 := FastNoiseLite.new()
 	#noisy1.fractal_octaves = 11
@@ -287,8 +292,15 @@ func instanciate_terrains2():
 					else:
 						%TreeMap.set_cell_item(Vector3i(new_x,h+1,new_y),1,get_randVertOrient())
 	pass
+
+var mi : MeshInstance3D = null
 func instanciate_terrains3():
-	var mi := MeshInstance3D.new()
+	if mi != null:
+		mi.queue_free()
+		remove_child(mi)
+		mi = null
+	
+	mi = MeshInstance3D.new()
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color.BURLYWOOD
 	mi.material_override = mat
